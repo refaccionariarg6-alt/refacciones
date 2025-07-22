@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <title>Refacciones RG</title>
+</head>
+<body>
+    <h1>Lista de refacciones</h1>
+    <form method="get" action="/">
+        <input type="text" name="q" placeholder="Buscar..." value="{{ query }}" />
+        <button type="submit">buscar.</button>
+    </form>
+    <table border="1" cellpadding="5" cellspacing="0">
+        <thead>
+            <tr>
+                <th>Categoria</th>
+                <th>Marca</th>
+                <th>Modelo</th>
+                <th>No. SKU</th>
+                <th>Producto</th>
+                <th>Precio</th>
+                <th>Cantidad</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in refacciones %}
+            <tr>
+                <td>{{ item['Categoria'] }}</td>
+                <td>{{ item['MARCA'] }}</td>
+                <td>{{ item['MODELO'] }}</td>
+                <td>{{ item['No. SKU'] }}</td>
+                <td>{{ item['PRODUCTO'] }}</td>
+                <td>{{ item['PRECIO'] }}</td>
+                <td>{{ item['QTY'] }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    
+    </table>
+</body>
+</html>
