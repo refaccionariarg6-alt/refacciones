@@ -1,41 +1,332 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8" />
-    <title>Refacciones RG</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Catálogo de Refacciones</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f8f9fa;
+      margin: 20px;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    form {
+      margin-bottom: 15px;
+      text-align: center;
+    }
+    input[type="text"] {
+      padding: 8px;
+      width: 250px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      transition: border-color 0.3s ease;
+    }
+    input[type="text"]:focus {
+      outline: none;
+      border-color: #007bff;
+    }
+    button {
+      padding: 8px 15px;
+      border: none;
+      background-color: #007bff;
+      color: white;
+      font-weight: bold;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    select {
+      padding: 8px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      cursor: pointer;
+      margin-left: 10px;
+    }
+    a#agregar-btn {
+      display: inline-block;
+      margin-left: 20px;
+      padding: 8px 15px;
+      background-color: #28a745;
+      color: white;
+      border-radius: 5px;
+      text-decoration: none;
+      font-weight: bold;
+      transition: background-color 0.3s ease;
+    }
+    a#agregar-btn:hover {
+      background-color: #19692c;
+    }
+
+    /* Grid de tarjetas */
+    .contenedor {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .tarjeta {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      padding: 15px;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .tarjeta:hover {
+      box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+      transform: translateY(-5px);
+    }
+
+    /* Imagen con zoom suave */
+    .tarjeta img {
+      width: 100%;
+      height: 150px;
+      object-fit: contain;
+      border-radius: 10px;
+      transition: transform 0.3s ease;
+    }
+    .tarjeta:hover img {
+      transform: scale(1.2);
+    }
+
+    /* Contenido de la tarjeta */
+    .tarjeta h3 {
+      margin: 12px 0 6px;
+      font-size: 1.2rem;
+      color: #333;
+    }
+    .tarjeta p {
+      margin: 4px 0;
+      color: #555;
+      font-size: 0.9rem;
+    }
+    .tarjeta .acciones {
+      margin-top: 12px;
+    }
+    .tarjeta .acciones a {
+      margin-right: 10px;
+      text-decoration: none;
+      color: #007bff;
+      font-weight: 600;
+      transition: color 0.3s ease;
+    }
+    .tarjeta .acciones a:hover {
+      color: #0056b3;
+    }
+
+    /* Modal para tarjeta expandida */
+    #modal-tarjeta {
+      display: none;
+    }
+    #modal-contenido {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      width: 90vw;
+      max-width: 600px;
+      max-height: 80vh;
+      overflow-y: auto;
+      transform: translate(-50%, -50%);
+      background: white;
+      z-index: 9999;
+      box-shadow: 0 0 25px rgba(0,0,0,0.4);
+      border-radius: 15px;
+      padding: 20px;
+      cursor: default;
+      transition: transform 0.3s ease;
+    }
+
+    /* Contenedor imagen zoom para modal */
+    #modal-contenido .imagen-zoom {
+      position: relative;
+      overflow: hidden;
+      cursor: zoom-in;
+      border-radius: 12px;
+      margin-bottom: 15px;
+    }
+    #modal-contenido .imagen-zoom img {
+      display: block;
+      width: 100%;
+      height: 300px;
+      object-fit: contain;
+      transition: transform 0.3s ease;
+      transform-origin: center center;
+    }
+
+    #modal-contenido h3 {
+      font-size: 1.6rem;
+      margin-top: 0;
+    }
+    #modal-contenido p {
+      font-size: 1rem;
+      margin: 8px 0;
+    }
+    #modal-contenido .acciones {
+      margin-top: 15px;
+    }
+    #cerrar-modal {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      background: transparent;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+    }
+
+    #fondo-blur {
+      position: fixed;
+      top:0;
+      left:0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0,0,0,0.3);
+      backdrop-filter: blur(4px);
+      z-index: 9998;
+    }
+    
+  </style>
+<script>
+  function expandirCard(id) {
+    const modal = document.getElementById('modal-tarjeta');
+    const modalBody = document.getElementById('modal-body');
+    const card = document.getElementById('card-' + id);
+
+    if (!card) return;
+
+    // Clonar el contenido de la tarjeta sin duplicar ids ni listeners
+    // Cambiamos la imagen para que esté dentro del contenedor de zoom
+    let contenido = card.innerHTML;
+
+    // Usamos DOMParser para modificar la imagen y ponerla dentro de .imagen-zoom
+    let parser = new DOMParser();
+    let doc = parser.parseFromString('<div>' + contenido + '</div>', 'text/html');
+
+    let img = doc.querySelector('img');
+    if (img) {
+      let divZoom = doc.createElement('div');
+      divZoom.className = 'imagen-zoom';
+      img.parentNode.replaceChild(divZoom, img);
+      divZoom.appendChild(img);
+    }
+
+    modalBody.innerHTML = doc.body.innerHTML;
+
+    modal.style.display = 'block';
+    document.body.style.overflow = 'hidden'; // evitar scroll body
+  }
+
+  function cerrarModal() {
+    const modal = document.getElementById('modal-tarjeta');
+    modal.style.display = 'none';
+    document.body.style.overflow = 'auto';
+  }
+
+  // Event listeners para cerrar modal
+  window.onload = function() {
+    document.getElementById('cerrar-modal').onclick = cerrarModal;
+    document.getElementById('fondo-blur').onclick = cerrarModal;
+
+    // Evitar cerrar modal al hacer click dentro del contenido
+    document.getElementById('modal-contenido').onclick = function(e) {
+      e.stopPropagation();
+    };
+
+    // Zoom con seguimiento del cursor para la imagen en el modal
+    const modalBody = document.getElementById('modal-body');
+    modalBody.addEventListener('mousemove', function(e) {
+      let zoomDiv = modalBody.querySelector('.imagen-zoom');
+      if (!zoomDiv) return;
+      let img = zoomDiv.querySelector('img');
+      if (!img) return;
+
+      const rect = zoomDiv.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      const xPercent = (x / rect.width) * 100;
+      const yPercent = (y / rect.height) * 100;
+
+      img.style.transformOrigin = `${xPercent}% ${yPercent}%`;
+      img.style.transform = 'scale(2)';
+      zoomDiv.style.cursor = 'zoom-out';
+    });
+
+    modalBody.addEventListener('mouseleave', function(e) {
+      let zoomDiv = modalBody.querySelector('.imagen-zoom');
+      if (!zoomDiv) return;
+      let img = zoomDiv.querySelector('img');
+      if (!img) return;
+
+      img.style.transformOrigin = 'center center';
+      img.style.transform = 'scale(1)';
+      zoomDiv.style.cursor = 'zoom-in';
+    });
+  }
+</script>
 </head>
 <body>
-    <h1>Lista de refacciones</h1>
-    <form method="get" action="/">
-        <input type="text" name="q" placeholder="Buscar..." value="{{ query }}" />
-        <button type="submit">buscar.</button>
-    </form>
-    <table border="1" cellpadding="5" cellspacing="0">
-        <thead>
-            <tr>
-                <th>Categoria</th>
-                <th>Marca</th>
-                <th>Modelo</th>
-                <th>No. SKU</th>
-                <th>Producto</th>
-                <th>Precio</th>
-                <th>Cantidad</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for item in refacciones %}
-            <tr>
-                <td>{{ item['Categoria'] }}</td>
-                <td>{{ item['MARCA'] }}</td>
-                <td>{{ item['MODELO'] }}</td>
-                <td>{{ item['No. SKU'] }}</td>
-                <td>{{ item['PRODUCTO'] }}</td>
-                <td>{{ item['PRECIO'] }}</td>
-                <td>{{ item['QTY'] }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    
-    </table>
+
+  <h1>Catálogo de Refacciones</h1>
+
+  <form action="{{ url_for('buscar') }}" method="get">
+    <input type="text" name="q" placeholder="Buscar refacción..." autocomplete="off" />
+    <button type="submit">Buscar</button>
+  </form>
+
+  <form method="get" action="{{ url_for('index') }}" style="text-align:center; margin-bottom: 20px;">
+    <label for="hoja">Seleccione Categoría: </label>
+    <select name="hoja" id="hoja" onchange="this.form.submit()">
+      {% for hoja in hojas %}
+        <option value="{{ hoja }}" {% if hoja == hoja_actual %}selected{% endif %}>{{ hoja }}</option>
+      {% endfor %}
+    </select>
+    <a id="agregar-btn" href="{{ url_for('agregar') }}">Agregar Refacción</a>
+  </form>
+
+  <div class="contenedor">
+   {% set contador = 0 %}
+{% for hoja, refacciones in datos.items() %}
+  {% for i, ref in refacciones.iterrows() %}
+    <div class="tarjeta" id="card-{{ hoja }}-{{ i }}" onclick="expandirCard('{{ hoja }}-{{ i }}')">
+      <img src="{{ ref['IMAGEN'] if ref['IMAGEN'] else 'https://via.placeholder.com/300x150?text=Sin+Imagen' }}" alt="{{ ref['PRODUCTO'] }}">
+      <h3>{{ ref['PRODUCTO'] }}</h3>
+      <p><strong>Marca:</strong> {{ ref['MARCA'] }}</p>
+      <p><strong>Modelo:</strong> {{ ref['MODELO'] }}</p>
+      <p><strong>SKU:</strong> {{ ref['SKU'] }}</p>
+      <p><strong>Precio:</strong> ${{ ref['PRECIO'] }}</p>
+      <p><strong>Cantidad (QTY):</strong> {{ ref['QTY'] }}</p>
+      <div class="acciones">
+<a href="{{ url_for('editar', hoja=hoja, indice=i) }}" onclick="event.stopPropagation()">Editar</a>
+<a href="/eliminar/{{ ref['_hoja'] if '_hoja' in ref else hoja }}/{{ ref['_indice'] if '_indice' in ref else i }}"
+   class="text-red-500 font-bold hover:underline" onclick="event.stopPropagation()">Eliminar</a>
+      </div>
+    </div>
+  {% endfor %}
+{% endfor %}
+
+  </div>
+
+  <!-- Modal para tarjeta expandida -->
+  <div id="modal-tarjeta" style="display:none;">
+    <div id="modal-contenido">
+      <button id="cerrar-modal">&times;</button>
+      <div id="modal-body"></div>
+    </div>
+    <div id="fondo-blur"></div>
+  </div>
+
 </body>
 </html>
