@@ -92,12 +92,21 @@
 <body>
   <h1>Editar Refacción ({{ ref['PRODUCTO'] }})</h1>
   <form method="post">
-    {% for col in columnas %}
-      <label for="{{ col }}">{{ col }}:</label>
-      <input type="text" id="{{ col }}" name="{{ col }}" value="{{ ref[col] }}">
+  <label for="nueva_hoja">Cambiar a Sección:</label>
+  <select id="nueva_hoja" name="nueva_hoja">
+    {% for h in hojas %}
+      <option value="{{ h }}" {% if h == hoja %}selected{% endif %}>{{ h }}</option>
     {% endfor %}
-    <button type="submit">Guardar Cambios</button>
-  </form>
+  </select>
+
+  {% for col in columnas %}
+    <label for="{{ col }}">{{ col }}:</label>
+    <input type="text" id="{{ col }}" name="{{ col }}" value="{{ ref[col] }}">
+  {% endfor %}
+  <button type="submit">Guardar Cambios</button>
+</form>
+
   <a class="volver" href="{{ url_for('index') }}">← Volver al Catálogo</a>
+
 </body>
 </html>
