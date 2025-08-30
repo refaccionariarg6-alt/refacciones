@@ -1,9 +1,13 @@
 from flask import Flask, render_template, request, redirect, url_for
 import sqlite3
 import pandas as pd
+import os
+
 
 app = Flask(__name__)
 db_path = 'inventario.db'
+
+print("Base de datos en:", os.path.abspath(db_path))
 
 def leer_hojas():
     conn = sqlite3.connect(db_path)
@@ -20,9 +24,10 @@ def leer_datos(tabla):
     return df
 
 def actualizar_datos(tabla, df):
-    conn = sqlite3.connect(db_path)
-    df.to_sql(tabla, conn, if_exists='replace', index=False)
-    conn.close()
+    conn = sqlite3.connect(db_path)  
+    df.to_sql(tabla, conn, if_exists='replace', index=False)  
+    conn.commit()  
+    conn.close()  
 
 @app.route('/')
 def index():
